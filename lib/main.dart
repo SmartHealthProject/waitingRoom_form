@@ -4,6 +4,7 @@ import 'package:form_demo/firebase_options.dart';
 import 'package:form_demo/forms_screen.dart';
 
 void main() async{
+  //async lets us continuously access from our project to our firebase backend
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
