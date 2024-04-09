@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "165055643058",
+    "project_id": "formdemo-ae6c2",
+    "storage_bucket": "formdemo-ae6c2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165055643058:android:4f556988f87ea89c17f8ab",
+        "android_client_info": {
+          "package_name": "com.example.form_demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEOvS91txsSawJFelxDEIWs0OcsY40jiI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
