@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.medical_services_outlined,
+                  Icons.medical_information,
                   size: 100,
                 ),
                 SizedBox(height: 75),
