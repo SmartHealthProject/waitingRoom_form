@@ -1,5 +1,5 @@
 // ignore_for_file: prefer_const_constructors
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -37,12 +37,33 @@ class _RegisterPageState extends State<RegisterPage> {
   }  
 
   Future signUp() async{
+    //authenticate user
     if (passwordConfirmed()) {
+      //create user
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(), 
         password: _passwordController.text.trim(),
       );
+
+      //add user details
+      addUserDetails(
+        _firstNameController.text.trim(), 
+        _lastNameController.text.trim(), 
+        _emailController.text.trim(), 
+        int.parse(_ageController.text.trim()),
+      );
     }
+  }
+
+  Future addUserDetails(String firstName, String lastName, String email, int age) async{
+    //because the collection was manually created in firestore
+    //it will automatically create a collection if it nothing exists
+    await FirebaseFirestore.instance.collection('users').add({
+      'first name': firstName,
+      'last name' : lastName,
+      'email' : email,
+      'age' : age,
+    });
   }
 
   bool passwordConfirmed(){
