@@ -9,6 +9,7 @@ class HomePage extends StatefulWidget {
 
   @override
   State<HomePage> createState() => _HomePageState();
+  
 }
 
 class _HomePageState extends State<HomePage> {
@@ -21,7 +22,11 @@ class _HomePageState extends State<HomePage> {
   //get docIDs
   Future getDocId() async{
     //snapshot can be called whatever we want
-    await FirebaseFirestore.instance.collection('users').get().then(
+    await FirebaseFirestore.instance
+        .collection('users')
+        .orderBy('age', descending: false)
+        .get()
+        .then(
           (snapshot) => snapshot.docs.forEach(
             (document) {
               print(document.reference);
@@ -34,6 +39,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
         title: Text(
           user.email!,
