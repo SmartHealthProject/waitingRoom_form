@@ -100,6 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(), // Enable scrolling even if content fits
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -109,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       Icons.medical_information,
                       size: 100,
                     ),
-                    SizedBox(height: 75),
+                    SizedBox(height: 45),
                     //Welcome back!
                     Text(
                       'Hello There!',
@@ -125,7 +126,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
               
-                    SizedBox(height: 50),
+                    SizedBox(height: 40),
               
                     //first name textfield
                     Padding(
