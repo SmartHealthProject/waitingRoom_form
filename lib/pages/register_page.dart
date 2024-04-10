@@ -25,6 +25,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final _lastNameController = TextEditingController();
   final _ageController = TextEditingController();
 
+  bool isPasswordValid = false;
+  String passwordValidationMessage = '';
+
   @override
   void dispose(){
     _emailController.dispose();
@@ -73,6 +76,21 @@ class _RegisterPageState extends State<RegisterPage> {
       return false;
     }
   }
+
+  void validatePassword(String passwordToValidate) {
+    String pattern =
+      r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{15,}$';
+    RegExp regExp = RegExp(pattern);
+    setState(() {
+      isPasswordValid = regExp.hasMatch(passwordToValidate);
+      if (!isPasswordValid) {
+        passwordValidationMessage =
+            'Password must be at least 15 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.';
+      } else {
+        passwordValidationMessage = 'Password looks good!';
+      }
+    });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -213,13 +231,30 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.only(left: 20.0),
-                        child: TextField(
-                          controller: _passwordController,
-                          obscureText: true, //makes the password obscure
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Password',
+                        child: Column(
+                          children: [TextField(
+                            controller: _passwordController,
+                            obscureText: true, //makes the password obscure
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Password',
+                            ),
+                            onChanged: validatePassword, //validates the password
                           ),
+                          SizedBox(height: 10), // Space between the text field and the validation message
+                          // Validation Message
+                          Text(
+                            passwordValidationMessage,
+                            style: TextStyle(
+                              color: isPasswordValid ? Colors.green : Colors.red, // Change color based on validation
+                            ),
+                          ),
+                          // Validation Icon
+                          Icon(
+                            isPasswordValid ? Icons.check : Icons.close, // Show check or cross icon
+                            color: isPasswordValid ? Colors.green : Colors.red,
+                          ),
+                          ],
                         ),
                       ),
                     ),
