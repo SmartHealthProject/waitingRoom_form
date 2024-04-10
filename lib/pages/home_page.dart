@@ -39,12 +39,12 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
         title: Text(
           user.email!,
           style: TextStyle(fontSize: 16),
         ),
+        backgroundColor: Colors.deepPurple[100],
         actions: [
           GestureDetector(
             onTap: (){
@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: ListTile(
                           title: GetUserName(documentId: docIDs[index]),
-                          tileColor: Colors.grey[200],
+                          tileColor: Colors.grey[100],
                         ),
                       );
                     },
