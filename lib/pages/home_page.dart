@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:form_demo/components/drawer.dart';
+import 'package:form_demo/pages/profile_page.dart';
 import 'package:form_demo/read%20data/get_user_name.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,6 +16,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  //sign out the user
+  void signOut() {
+    FirebaseAuth.instance.signOut();
+  }
   
   Future<String?> getSignedInUserFirstName() async {
     // Get the currently logged-in user
@@ -52,9 +58,23 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void goToProfilePage(){
+    //pop menu drawer
+    Navigator.pop(context);
+
+    //go to profile page
+    Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => const ProfilePage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.deepPurple[50],
       appBar: AppBar(
         title: FutureBuilder<String?>(
           future: getSignedInUserFirstName(),
@@ -65,7 +85,10 @@ class _HomePageState extends State<HomePage> {
               final firstName = snapshot.data!;
               return Text(
                 'Welcome, $firstName!',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
               );
             } else if (snapshot.hasError) {
               return Text('Error retrieving name'); // Handle errors
@@ -74,15 +97,22 @@ class _HomePageState extends State<HomePage> {
             return Text('Welcome!'); 
           },
         ),
-        backgroundColor: Colors.deepPurple[100],
+        backgroundColor: Colors.deepPurple[300],
         actions: [
           GestureDetector(
             onTap: () {
               FirebaseAuth.instance.signOut();
             },
-            child: Icon(Icons.logout),
+            child: Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
           ),
         ],
+      ),
+      drawer: MyDrawer(
+        onProfileTap: goToProfilePage,
+        onSignOut: signOut,
       ),
       //body:
     );
