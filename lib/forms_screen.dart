@@ -1,14 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:form_demo/models/person.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_core/firebase_core.dart';
-//import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 class FormsScreen extends StatefulWidget {
-  const FormsScreen({super.key});
+  const FormsScreen({Key? key}) : super(key: key);
 
   @override
   State<FormsScreen> createState() => _FormsScreenState();
@@ -16,36 +13,43 @@ class FormsScreen extends StatefulWidget {
 
 class _FormsScreenState extends State<FormsScreen> {
   final _formsKey = GlobalKey<FormState>();
+  final _dobController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _middleNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
 
-  //final _passwordController = TextEditingController();
+  final List<String> _genders = ['Male', 'Female', 'Other'];
+  String? _selectedGender;
 
-  final _person = Person();
-  final _dobController = TextEditingController(); // Controller for DOB
+  final List<String> _maritalStatuses = ['Single', 'Married', 'Divorced', 'Widowed']; 
+  String? _selectedMaritalStatus;
 
-  final List<String> _genders = ['Male', 'Female', 'Other']; // Example gender options
-  String? _selectedGender; // Variable to hold selected gender
+  final _PrimaryDocNameController = TextEditingController();
+  final _ssnController = TextEditingController();
 
-  final List<String> _maritalStatuses = ['Single', 'Married', 'Divorced', 'Widowed']; // Example marital statuses
-  String? _selectedMaritalStatus; // Variable to hold selected marital status
-
-  
   @override
   void dispose() {
-    _dobController.dispose(); // Dispose controller when state is disposed
+    _dobController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _PrimaryDocNameController.dispose();
+    _middleNameController.dispose();
+    _ssnController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.deepPurple[50],
       appBar: AppBar(
         title: const Center(
           child: Text(
-            'Complete your medical profile', 
+            'Electronic Health Records', 
             style: TextStyle(color: Colors.white),
           ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.deepPurple[300],
       ),
       body: Container(
         margin: const EdgeInsets.all(20),
@@ -56,6 +60,8 @@ class _FormsScreenState extends State<FormsScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+
+                  //first name field
                   TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'First Name', 
@@ -68,11 +74,10 @@ class _FormsScreenState extends State<FormsScreen> {
                       }
                       return null;
                     },
-                    //onChanged: (value){
-                      //debugPrint(value);
-                    //},
-                    onSaved: (value) => _person.firstName = value,
+                    controller: _firstNameController,
                   ),
+
+                  //middle name field
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'Middle Name'),
                     validator: (value){
@@ -81,9 +86,10 @@ class _FormsScreenState extends State<FormsScreen> {
                       }
                       return null;
                     },
-                    onSaved: (value) => _person.middleName = value, 
+                    controller: _middleNameController,
                   ),
 
+                  //last name
                   TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Last Name', 
@@ -96,22 +102,19 @@ class _FormsScreenState extends State<FormsScreen> {
                       }
                       return null;
                     },
-                    //onChanged: (value){
-                      //debugPrint(value);
-                    //},
-                    onSaved: (value) => _person.lastName = value, 
+                    controller: _lastNameController,
                   ),
 
+                  //DOB
                   TextFormField(
-                    controller: _dobController, // Use controller for DOB
+                    controller: _dobController,
                     decoration: const InputDecoration(
                       labelText: 'Date of Birth (DOB)',
                       hintText: 'Select your date of birth',
                       suffixIcon: Icon(Icons.calendar_today),
                     ),
-                    readOnly: true, // Make field read-only
+                    readOnly: true,
                     onTap: () async {
-                    // Use DatePicker to get DOB
                       final DateTime? pickedDate = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now(),
@@ -119,14 +122,13 @@ class _FormsScreenState extends State<FormsScreen> {
                         lastDate: DateTime.now(),
                       );
                       if (pickedDate != null) {
-                        // Format and set DOB in controller
                         String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
                         _dobController.text = formattedDate;
                       }
                     },
-                    //onSaved: (value) => _person.dob = value, 
                   ),
-
+                  
+                  //Gender
                   DropdownButtonFormField(
                     decoration: const InputDecoration(
                       labelText: 'Sex',
@@ -139,19 +141,20 @@ class _FormsScreenState extends State<FormsScreen> {
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
-                        setState(() {
+                      setState(() {
                         _selectedGender = newValue!;
                       });
                     },
                     validator: (value) => value == null ? 'Please select your sex' : null,
                   ),
 
+                  //Marital Status
                   DropdownButtonFormField<String>(
                     decoration: const InputDecoration(
                       labelText: 'Marital Status',
                       hintText: 'Please specify your marital status',
                     ),
-                    value: _selectedMaritalStatus, // Set the current dropdown value
+                    value: _selectedMaritalStatus,
                     items: _maritalStatuses.map((String status) {
                       return DropdownMenuItem<String>(
                         value: status,
@@ -171,6 +174,7 @@ class _FormsScreenState extends State<FormsScreen> {
                     },
                   ),
 
+                  //SSN
                   TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'SSN',
@@ -180,10 +184,10 @@ class _FormsScreenState extends State<FormsScreen> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(11), // Limit to 9 digits + 2 hyphen
+                      LengthLimitingTextInputFormatter(11),
                       TextInputFormatter.withFunction((oldValue, newValue) {
                         final newText = newValue.text.replaceAll('-', '');
-                        if (newText.length > 9) return oldValue; // Limit to 9 digits
+                        if (newText.length > 9) return oldValue;
                         if (newText.length > 5) {
                           final formattedText = '${newText.substring(0, 3)}-${newText.substring(3, 5)}-${newText.substring(5)}';
                           return TextEditingValue(
@@ -200,22 +204,21 @@ class _FormsScreenState extends State<FormsScreen> {
                         return newValue;
                       }),
                     ],
+                    controller: _ssnController,
                     validator: (value) {
-                      // Regular expression for validating SSN (###-##-####)
                       final ssnRegex = RegExp(r'^\d{3}-\d{2}-\d{4}$');
                       if (value == null || value.isEmpty || !ssnRegex.hasMatch(value)) {
                         return 'Please enter a valid SSN (###-##-####)';
                       }
                       return null;
                     },
-                    onSaved: (value) => _person.ssn = value, 
                   ),
 
+                  //Primary Care Doctor Name
                   TextFormField(
                     decoration: const InputDecoration(
-                      labelText: 'Primary Doctore Name', 
+                      labelText: 'Primary Doctor Name', 
                       hintText: 'Please fill in your primary doctor name', 
-                      //suffixIcon: Icon(Icons.person)
                     ),
                     validator: (value){
                       if(value == null || value.isEmpty){
@@ -223,60 +226,41 @@ class _FormsScreenState extends State<FormsScreen> {
                       }
                       return null;
                     },
-                    //onChanged: (value){
-                      //debugPrint(value);
-                    //},
-                    onSaved: (value) => _person.primaryDoctorName = value, 
+                    controller: _PrimaryDocNameController,
                   ),
 
-                  
                   const SizedBox(
                     height: 20,
                   ),
                   ElevatedButton(
-                    
                     onPressed: () async {
-                      print("Button pressed");
                       if (_formsKey.currentState!.validate()) {
                         _formsKey.currentState!.save();
 
-                        // Prepare the data for saving
-                        _person.dob = _dobController.text;
-                        _person.gender = _selectedGender;
-                        _person.maritalStatus = _selectedMaritalStatus;
-                        print("Attempting to save data to Firebase");
                         try {
-                          // Reference to Firestore collection
-                          final CollectionReference people = FirebaseFirestore.instance.collection('people');
+                          final currentUser = FirebaseAuth.instance.currentUser;
+                          if (currentUser != null) {
+                            final userRef = FirebaseFirestore.instance.collection('users').doc(currentUser.uid).collection('ehr records').doc();
+                            
+                            await userRef.set({
+                              'first name': _firstNameController.text.trim(),
+                              'middle name': _middleNameController.text.trim(),
+                              'last name': _lastNameController.text.trim(),
+                              'dob': _dobController.text.trim(),
+                              'gender': _selectedGender,
+                              'maritalStatus': _selectedMaritalStatus,
+                              'primary doctor name': _PrimaryDocNameController.text.trim(),
+                              'ssn': _ssnController.text.trim(),
+                            });
 
-                          // Adding data to Firestore collection
-                          await people.add(_person.toMap());
-                          print("Data saved successfully");
-
-                          // Show a dialog upon successful submission
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return const AlertDialog(content: Text('Profile completed. Thank you.'));
-                            },
-                          );
-                          /* 
-                          // Reference to the Firebase Realtime Database
-                          final dbRef = FirebaseDatabase.instance.ref();
-
-                          // Inserting data into a specific path, here "people". Adjust as needed.
-                          await dbRef.child('people').push().set(_person.toMap());
-                          print("Data saved successfully");
-                          // Show a dialog upon successful submission
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return const AlertDialog(content: Text('Profile completed. Thank you.'));
-                            },
-                          );
-                          */
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return const AlertDialog(content: Text('Profile completed. Thank you.'));
+                              },
+                            );
+                          }
                         } catch (error) {
-                          // Handle errors more effectively here
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -290,7 +274,7 @@ class _FormsScreenState extends State<FormsScreen> {
                     },
 
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
+                      backgroundColor: Colors.deepPurple,
                     ), 
                     child: const Text(
                       'Complete your profile', 

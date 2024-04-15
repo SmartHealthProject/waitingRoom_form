@@ -122,20 +122,38 @@ class _HomePageState extends State<HomePage> {
         onProfileTap: goToProfilePage,
         onSignOut: signOut,
       ),
-      body: Column(
-        children: [
-          // Your existing widgets...
-          Expanded(
-            child: Container(), // Add your existing widgets here
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              //complete medical profile button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),
+                child: GestureDetector(
+                  onTap: navigateToFormsScreen,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Complete your Medical Profile',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      )
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: navigateToFormsScreen,
-              child: Text('Complete Medical Profile'),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
