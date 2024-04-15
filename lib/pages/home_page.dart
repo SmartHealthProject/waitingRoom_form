@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:form_demo/components/drawer.dart';
+import 'package:form_demo/forms_screen.dart';
 import 'package:form_demo/pages/profile_page.dart';
 import 'package:form_demo/read%20data/get_user_name.dart';
 
@@ -71,6 +72,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void navigateToFormsScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const FormsScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,7 +122,21 @@ class _HomePageState extends State<HomePage> {
         onProfileTap: goToProfilePage,
         onSignOut: signOut,
       ),
-      //body:
+      body: Column(
+        children: [
+          // Your existing widgets...
+          Expanded(
+            child: Container(), // Add your existing widgets here
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: navigateToFormsScreen,
+              child: Text('Complete Medical Profile'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
