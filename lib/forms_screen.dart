@@ -240,9 +240,9 @@ class _FormsScreenState extends State<FormsScreen> {
                         try {
                           final currentUser = FirebaseAuth.instance.currentUser;
                           if (currentUser != null) {
-                            final userRef = FirebaseFirestore.instance.collection('users').doc(currentUser.uid).collection('user_data');
+                            final userRef = FirebaseFirestore.instance.collection('users').doc(currentUser.uid).collection('ehr_records');
                             
-                            await userRef.add({
+                            await userRef.doc(currentUser.uid).set({
                               'first name': _firstNameController.text.trim(),
                               'middle name': _middleNameController.text.trim(),
                               'last name': _lastNameController.text.trim(),
