@@ -74,13 +74,19 @@ class _RegisterPageState extends State<RegisterPage> {
   Future addUserDetails(String firstName, String lastName, String email, String password) async{
     //because the collection was manually created in firestore
     //it will automatically create a collection if it nothing exists
-    await FirebaseFirestore.instance.collection('users').add({
-      'first name': firstName,
-      'last name' : lastName,
-      'email' : email,
-      'password' : password,
-      //'age' : age,
-    });
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).set({
+        'first name': firstName,
+        'last name' : lastName,
+        'email' : email,
+        'password' : password,
+        //'age' : age,
+      });
+    } else {
+      print('No user is currently authenticated.');
+    }
+
   }
 
   bool passwordConfirmed(){
