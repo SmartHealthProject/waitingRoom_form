@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:form_demo/components/drawer.dart';
+import 'package:form_demo/forms_screen.dart';
+import 'package:form_demo/pages/profile_page.dart';
 import 'package:form_demo/read%20data/get_user_name.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,70 +17,142 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  final user = FirebaseAuth.instance.currentUser!;
+  //sign out the user
+  void signOut() {
+    FirebaseAuth.instance.signOut();
+  }
+  
+  Future<String?> getSignedInUserFirstName() async {
+    // Get the currently logged-in user
+    final user = FirebaseAuth.instance.currentUser;
 
-  //document IDs
-  List<String> docIDs = [];
+    // Check if a user is signed in
+    if (user != null) {
+      // Get the user's email
+      final email = user.email;
 
-  //get docIDs
-  Future getDocId() async{
-    //snapshot can be called whatever we want
-    await FirebaseFirestore.instance
-        .collection('users')
-        .orderBy('age', descending: false)
-        .get()
-        .then(
-          (snapshot) => snapshot.docs.forEach(
-            (document) {
-              print(document.reference);
-              docIDs.add(document.reference.id);
-            },
-          ),
-        );
+      try {
+        // Fetch the user's document from the "users" collection based on email
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .get();
+
+        // Check if any document matches the query
+        if (querySnapshot.docs.isNotEmpty) {
+          // Get the first document (there should be only one, since email is unique)
+          final docSnapshot = querySnapshot.docs.first;
+
+          // Extract the first name from the document data
+          final firstName = docSnapshot['first name'];
+
+          return firstName;
+        } else {
+          return null; // Handle case where user document doesn't exist
+        }
+      } catch (error) {
+        print('Error retrieving user data: $error');
+        return null; // Handle error retrieving user data
+      }
+    } else {
+      return null; // Handle case where no user is signed in
+    }
+  }
+
+  void goToProfilePage(){
+    //pop menu drawer
+    Navigator.pop(context);
+
+    //go to profile page
+    Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => const ProfilePage(),
+      ),
+    );
+  }
+
+  void navigateToFormsScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const FormsScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.deepPurple[50],
       appBar: AppBar(
-        title: Text(
-          user.email!,
-          style: TextStyle(fontSize: 16),
+        title: FutureBuilder<String?>(
+          future: getSignedInUserFirstName(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator(); // Show loading indicator while waiting
+            } else if (snapshot.hasData) {
+              final firstName = snapshot.data!;
+              return Text(
+                'Welcome, $firstName!',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              );
+            } else if (snapshot.hasError) {
+              return Text('Error retrieving name'); // Handle errors
+            } 
+            // Optional: Default greeting if no data yet
+            return Text('Welcome!'); 
+          },
         ),
-        backgroundColor: Colors.deepPurple[100],
+        backgroundColor: Colors.deepPurple[300],
         actions: [
           GestureDetector(
-            onTap: (){
+            onTap: () {
               FirebaseAuth.instance.signOut();
             },
-            child: Icon(Icons.logout)
+            child: Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: FutureBuilder(
-                future: getDocId(),
-                builder: (context, snapshot){
-                  return ListView.builder(
-                    itemCount: docIDs.length,
-                    itemBuilder: (context,index){
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListTile(
-                          title: GetUserName(documentId: docIDs[index]),
-                          tileColor: Colors.grey[100],
+      drawer: MyDrawer(
+        onProfileTap: goToProfilePage,
+        onSignOut: signOut,
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              //complete medical profile button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),
+                child: GestureDetector(
+                  onTap: navigateToFormsScreen,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Complete your Medical Profile',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                      );
-                    },
-                  );
-                },
+                      )
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -24,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmpasswordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _ageController = TextEditingController();
+  //final _ageController = TextEditingController();
 
   bool isPasswordValid = false;
   String passwordValidationMessage = '';
@@ -36,37 +36,50 @@ class _RegisterPageState extends State<RegisterPage> {
     _confirmpasswordController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _ageController.dispose();
+    //_ageController.dispose();
     super.dispose();
   }  
 
   Future signUp() async{
-    //authenticate user
-    if (passwordConfirmed()) {
-      //create user
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(), 
-        password: _passwordController.text.trim(),
-      );
+    // Check if password meets requirements and passwords match
+    if (isPasswordValid && passwordConfirmed()) {
+      try {
+        // Authenticate user
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(), 
+          password: _passwordController.text.trim(),
+        );
 
-      //add user details
-      addUserDetails(
-        _firstNameController.text.trim(), 
-        _lastNameController.text.trim(), 
-        _emailController.text.trim(), 
-        int.parse(_ageController.text.trim()),
-      );
+        // If user creation is successful, add user details
+        if (userCredential.user != null) {
+          await addUserDetails(
+            _firstNameController.text.trim(), 
+            _lastNameController.text.trim(), 
+            _emailController.text.trim(), 
+            _passwordController.text.trim(),
+            //int.parse(_ageController.text.trim()),
+          );
+          // Navigate to next screen or perform necessary actions after successful sign up
+        }
+      } catch (error) {
+        // Handle any errors that occur during sign up process
+        print("Error during sign up: $error");
+      }
+    } else {
+      // Show error message or handle password validation failure
+      print("Password does not meet requirements or passwords do not match.");
     }
   }
 
-  Future addUserDetails(String firstName, String lastName, String email, int age) async{
+  Future addUserDetails(String firstName, String lastName, String email, String password) async{
     //because the collection was manually created in firestore
     //it will automatically create a collection if it nothing exists
     await FirebaseFirestore.instance.collection('users').add({
       'first name': firstName,
       'last name' : lastName,
       'email' : email,
-      'age' : age,
+      'password' : password,
+      //'age' : age,
     });
   }
 
@@ -98,9 +111,9 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(), // Enable scrolling even if content fits
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -175,7 +188,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
               
                     SizedBox(height: 10),
-              
+
+                    /* 
                     //age textfield
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -199,6 +213,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
               
                     SizedBox(height: 10),
+                    */
               
                     //email textfield
                     Padding(
@@ -304,7 +319,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
               
                     SizedBox(height: 10),
-
+          
                     //password match message
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -359,7 +374,7 @@ class _RegisterPageState extends State<RegisterPage> {
               
                     SizedBox(height: 25),
               
-                    //not a member? register now
+                    //already a member? register now
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
