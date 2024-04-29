@@ -27,6 +27,59 @@ class _FormsScreenState extends State<FormsScreen> {
   final _PrimaryDocNameController = TextEditingController();
   final _ssnController = TextEditingController();
 
+  // Address fields
+  final _streetController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _stateController = TextEditingController();
+  final _zipCodeController = TextEditingController();
+
+  // Phone number
+  final _phoneController = TextEditingController();
+
+  // Emergency Contact fields
+  final _emergencyNameController = TextEditingController();
+  final _emergencyRelationshipController = TextEditingController();
+  final _emergencyPhoneController = TextEditingController();
+
+  // Medical conditions and Family history
+  List<String> _selectedMedicalConditions = [];
+  List<String> _selectedFamilyHistory = [];
+
+  // Smoking status
+  String? _smokingStatus;
+
+  //chosen state
+  String? _selectedState;
+
+  // Medications
+  final _medicationsController = TextEditingController();
+
+  // Lists of conditions
+  final List<String> _medicalConditions = [
+    'Rheumatic fever', 'Recent surgery', 'Edema (swelling of ankles)', 'High blood pressure',
+    'Injury to back or knees', 'Low blood pressure', 'Seizures', 'Lung disease', 'Heart attack',
+    'Fainting or dizziness with or without physical exertion', 'Diabetes', 'High cholesterol',
+    'Orthopnea', 'Shortness of breath at rest or with mild exertion', 'Chest pains', 
+    'Palpitations or tachycardia', 'Intermittent claudication', 'Pain, discomfort in chest, neck, jaw, arms',
+    'Known heart murmur', 'Unusual fatigue or shortness of breath with usual activities',
+    'Temporary loss of visual acuity or speech, or short-term numbness or weakness', 'Other'
+  ];
+
+  final List<String> _familyHistoryConditions = [
+    'Heart arrhythmia', 'Heart attack', 'Heart operation', 'Congenital heart disease',
+    'Premature death before age 50', 'Significant disability secondary to a heart condition',
+    'Marfan syndrome', 'High blood pressure', 'High cholesterol', 'Diabetes', 'Other major illness'
+  ];
+
+  // States for dropdown
+  final List<String> _states = [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia',
+    'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
+    'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
+    'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
+    'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+  ];
+
   @override
   void dispose() {
     _dobController.dispose();
@@ -35,6 +88,15 @@ class _FormsScreenState extends State<FormsScreen> {
     _PrimaryDocNameController.dispose();
     _middleNameController.dispose();
     _ssnController.dispose();
+    _streetController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _zipCodeController.dispose();
+    _phoneController.dispose();
+    _emergencyNameController.dispose();
+    _emergencyRelationshipController.dispose();
+    _emergencyPhoneController.dispose();
+    _medicationsController.dispose();
     super.dispose();
   }
 
@@ -127,6 +189,48 @@ class _FormsScreenState extends State<FormsScreen> {
                       }
                     },
                   ),
+
+                  // Address section
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text('Address:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                  TextFormField(
+                    controller: _streetController,
+                    decoration: const InputDecoration(labelText: 'Street'),
+                  ),
+                  TextFormField(
+                    controller: _cityController,
+                    decoration: const InputDecoration(labelText: 'City'),
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _selectedState,
+                    decoration: const InputDecoration(labelText: 'State'),
+                    items: _states.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedState = newValue;
+                      });
+                    },
+                    validator: (value) => value == null ? 'Please select your state' : null,
+                  ),
+                  TextFormField(
+                    controller: _zipCodeController,
+                    decoration: const InputDecoration(labelText: 'Zip Code'),
+                    keyboardType: TextInputType.number,
+                  ),
+
+                  // Phone number
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: const InputDecoration(labelText: 'Phone Number'),
+                    keyboardType: TextInputType.phone,
+                  ),
                   
                   //Gender
                   DropdownButtonFormField(
@@ -172,6 +276,93 @@ class _FormsScreenState extends State<FormsScreen> {
                       }
                       return null;
                     },
+                  ),
+
+                  // Emergency contact
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text('Emergency Contact:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                  TextFormField(
+                    controller: _emergencyNameController,
+                    decoration: const InputDecoration(labelText: 'Emergency Contact Name'),
+                  ),
+                  TextFormField(
+                    controller: _emergencyRelationshipController,
+                    decoration: const InputDecoration(labelText: 'Relationship to User'),
+                  ),
+                  TextFormField(
+                    controller: _emergencyPhoneController,
+                    decoration: const InputDecoration(labelText: 'Emergency Phone Number'),
+                    keyboardType: TextInputType.phone,
+                  ),
+
+                  // Medical conditions (use CheckboxListTile for each condition)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text('Past/Present Medical Conditions:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                  ..._medicalConditions.map((condition) {
+                    return CheckboxListTile(
+                      title: Text(condition),
+                      value: _selectedMedicalConditions.contains(condition),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedMedicalConditions.add(condition);
+                          } else {
+                            _selectedMedicalConditions.removeWhere((item) => item == condition);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+
+                  // Family history (similar to medical conditions)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text('Family Medical History:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                  ..._familyHistoryConditions.map((condition) {
+                    return CheckboxListTile(
+                      title: Text(condition),
+                      value: _selectedFamilyHistory.contains(condition),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedFamilyHistory.add(condition);
+                          } else {
+                            _selectedFamilyHistory.removeWhere((item) => item == condition);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+
+                  // Smoking status
+                  DropdownButtonFormField<String>(
+                    value: _smokingStatus,
+                    decoration: const InputDecoration(labelText: 'Do you smoke?'),
+                    items: <String>['Yes', 'No'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _smokingStatus = newValue;
+                      });
+                    },
+                  ),
+
+                  // List of medications
+                  TextFormField(
+                    controller: _medicationsController,
+                    decoration: const InputDecoration(
+                      labelText: 'List of Medications',
+                      hintText: 'Separate medications with commas',
+                    ),
                   ),
 
                   //SSN
@@ -242,16 +433,32 @@ class _FormsScreenState extends State<FormsScreen> {
                           if (currentUser != null) {
                             final userRef = FirebaseFirestore.instance.collection('users').doc(currentUser.uid).collection('ehr_records');
                             
-                            await userRef.doc(currentUser.uid).set({
+                            // Create a map of all the data to store
+                            Map<String, dynamic> userData = {
                               'first name': _firstNameController.text.trim(),
                               'middle name': _middleNameController.text.trim(),
                               'last name': _lastNameController.text.trim(),
                               'dob': _dobController.text.trim(),
                               'gender': _selectedGender,
-                              'maritalStatus': _selectedMaritalStatus,
+                              'marital status': _selectedMaritalStatus,
                               'primary doctor name': _PrimaryDocNameController.text.trim(),
                               'ssn': _ssnController.text.trim(),
-                            });
+                              'street': _streetController.text.trim(),
+                              'city': _cityController.text.trim(),
+                              'state': _selectedState,
+                              'zip code': _zipCodeController.text.trim(),
+                              'phone number': _phoneController.text.trim(),
+                              'emergency contact name': _emergencyNameController.text.trim(),
+                              'emergency relationship': _emergencyRelationshipController.text.trim(),
+                              'emergency phone': _emergencyPhoneController.text.trim(),
+                              'medical conditions': _selectedMedicalConditions,
+                              'family history': _selectedFamilyHistory,
+                              'smoking status': _smokingStatus,
+                              'medications': _medicationsController.text.trim(),
+                            };
+
+                            // Save the data in Firestore
+                            await userRef.doc(currentUser.uid).set(userData, SetOptions(merge: true));
 
                             showDialog(
                               context: context,
@@ -260,7 +467,7 @@ class _FormsScreenState extends State<FormsScreen> {
                               },
                             );
                           }
-                        } catch (error) {
+                        }  catch (error) {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
