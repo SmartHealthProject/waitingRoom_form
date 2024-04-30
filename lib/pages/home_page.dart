@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:form_demo/components/drawer.dart';
 import 'package:form_demo/forms_screen.dart';
 import 'package:form_demo/pages/profile_page.dart';
-import 'package:form_demo/read%20data/get_user_name.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,6 +15,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool hasEHRData = false;
 
   //sign out the user
   void signOut() {
@@ -57,6 +57,27 @@ class _HomePageState extends State<HomePage> {
     } else {
       return null; // Handle case where no user is signed in
     }
+  }
+
+  Future<bool> hasEHRRecords() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid).collection('ehr_records');
+      final querySnapshot = await userRef.get();
+      return querySnapshot.docs.isNotEmpty;
+    }
+    return false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkEHRRecords();
+  }
+  
+  void checkEHRRecords() async {
+    hasEHRData = await hasEHRRecords();
+    setState(() {}); // Rebuild the widget after data is fetched
   }
 
   void goToProfilePage(){
@@ -130,7 +151,7 @@ class _HomePageState extends State<HomePage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),
                 child: GestureDetector(
-                  onTap: navigateToFormsScreen,
+                  onTap: hasEHRData ? goToProfilePage : navigateToFormsScreen,
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                     width: double.infinity,
@@ -140,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: Center(
                       child: Text(
-                        'Complete your Medical Profile',
+                        hasEHRData ? 'Profile Page' : 'Complete your Medical Profile',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
