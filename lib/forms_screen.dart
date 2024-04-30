@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'pages/profile_page.dart';
 
 class FormsScreen extends StatefulWidget {
   const FormsScreen({Key? key}) : super(key: key);
@@ -432,6 +433,12 @@ class _FormsScreenState extends State<FormsScreen> {
                           final currentUser = FirebaseAuth.instance.currentUser;
                           if (currentUser != null) {
                             final userRef = FirebaseFirestore.instance.collection('users').doc(currentUser.uid).collection('ehr_records');
+
+                            // Convert medications from comma-separated string to list of trimmed strings
+                            List<String> medicationList = _medicationsController.text.split(',')
+                              .map((medication) => medication.trim()) // Remove any extra whitespace
+                              .where((medication) => medication.isNotEmpty) // Remove any empty entries
+                              .toList();
                             
                             // Create a map of all the data to store
                             Map<String, dynamic> userData = {
@@ -454,17 +461,24 @@ class _FormsScreenState extends State<FormsScreen> {
                               'medical conditions': _selectedMedicalConditions,
                               'family history': _selectedFamilyHistory,
                               'smoking status': _smokingStatus,
-                              'medications': _medicationsController.text.trim(),
+                              'medications': medicationList,
                             };
 
                             // Save the data in Firestore
                             await userRef.doc(currentUser.uid).set(userData, SetOptions(merge: true));
 
+                            /* 
                             showDialog(
                               context: context,
                               builder: (BuildContext context) {
                                 return const AlertDialog(content: Text('Profile completed. Thank you.'));
                               },
+                            );
+                            */
+                            // Navigate to ProfilePage after successful profile completion
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => ProfilePage()),
+                              (Route<dynamic> route) => false,
                             );
                           }
                         }  catch (error) {
